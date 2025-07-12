@@ -1,3 +1,0 @@
-/home/miaomiao/micro_test/SkipList/build/CMakeFiles/skiplist_test.dir
-/home/miaomiao/micro_test/SkipList/build/CMakeFiles/edit_cache.dir
-/home/miaomiao/micro_test/SkipList/build/CMakeFiles/rebuild_cache.dir
