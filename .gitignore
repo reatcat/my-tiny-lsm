@@ -1,7 +1,7 @@
 # ignore build and bin
 
-./build/
-./bin/
+/build/
+/bin/
 *.o
 *.a
 *.so
