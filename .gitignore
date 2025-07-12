@@ -1,0 +1,13 @@
+# ignore build and bin
+
+./build/
+./bin/
+*.o
+*.a
+*.so
+*.dylib
+*.llb
+
+.vscode/
+.DS_Store
+*.log
