@@ -24,6 +24,7 @@ struct SkiplistNode {
   SkiplistNode(const std::string &key, const std::string &value,
                uint64_t transaction_id, int level)
       : key_(key), value_(value), tranction_id_(transaction_id),
+        forward_(level, nullptr),
         backward_(level, std::weak_ptr<SkiplistNode>()) {}
 
   void set_backward(int level, std::shared_ptr<SkiplistNode> node) {
@@ -53,10 +54,18 @@ struct SkiplistNode {
 };
 
 class SkiplistIterator : public BaseIterator {
+public:
   SkiplistIterator(std::shared_ptr<SkiplistNode> node) : current(node){};
   SkiplistIterator() : current(nullptr), lock(nullptr){};
-  friend class Skiplist;
+  // friend class Skiplist;
   virtual BaseIterator &operator++() override;
+  virtual BaseIterator &operator--() override {
+    if (current) {
+      auto backward = current->backward_[0].lock();
+      current = backward;
+    }
+    return *this;
+  }
   virtual bool operator==(const BaseIterator &other) const override;
   virtual bool operator!=(const BaseIterator &other) const override;
   virtual value_type operator*() const override;
@@ -97,39 +106,39 @@ public:
       current = next;
     }
     head.reset();
-}
+  }
 
-// 插入或更新键值对
-// 这里不对 tranction_id 进行检查，由上层保证 tranction_id 的合法性
-void put(const std::string &key, const std::string &value,
-         uint64_t tranction_id);
+  // 插入或更新键值对
+  // 这里不对 tranction_id 进行检查，由上层保证 tranction_id 的合法性
+  void put(const std::string &key, const std::string &value,
+           uint64_t tranction_id);
 
-// 查找键对应的值
-// 事务 id 为0 表示没有开启事务
-// 否则只能查找事务 id 小于等于 tranction_id 的值
-// 返回值: 如果找到，返回 value 和 tranction_id，否则返回空
-SkiplistIterator get(const std::string &key, uint64_t tranction_id);
+  // 查找键对应的值
+  // 事务 id 为0 表示没有开启事务
+  // 否则只能查找事务 id 小于等于 tranction_id 的值
+  // 返回值: 如果找到，返回 value 和 tranction_id，否则返回空
+  SkiplistIterator get(const std::string &key, uint64_t tranction_id);
 
-// !!! 这里的 remove 是跳表本身真实的 remove,  lsm 应该使用 put 空值表示删除
-void remove(const std::string &key); // 删除键值对
+  // !!! 这里的 remove 是跳表本身真实的 remove,  lsm 应该使用 put 空值表示删除
+  void remove(const std::string &key); // 删除键值对
 
-// 将跳表数据刷出，返回有序键值对列表
-// value 为 真实 value 和 tranction_id 的二元组
-std::vector<std::tuple<std::string, std::string, uint64_t>> flush();
+  // 将跳表数据刷出，返回有序键值对列表
+  // value 为 真实 value 和 tranction_id 的二元组
+  std::vector<std::tuple<std::string, std::string, uint64_t>> flush();
 
-size_t get_size();
+  size_t get_size();
 
-void clear(); // 清空跳表，释放内存
+  void clear(); // 清空跳表，释放内存
 
-SkiplistIterator begin();
-SkiplistIterator begin_preffix(const std::string &preffix);
+  SkiplistIterator begin();
+  SkiplistIterator begin_preffix(const std::string &preffix);
 
-SkiplistIterator end();
-SkiplistIterator end_preffix(const std::string &preffix);
+  SkiplistIterator end();
+  SkiplistIterator end_preffix(const std::string &preffix);
 
-std::optional<std::pair<SkiplistIterator, SkiplistIterator>>
-iters_monotony_predicate(std::function<int(const std::string &)> predicate);
+  std::optional<std::pair<SkiplistIterator, SkiplistIterator>>
+  iters_monotony_predicate(std::function<int(const std::string &)> predicate);
 
-void print_skiplist();
+  void print_skiplist();
 };
 } // namespace my_tiny_lsm

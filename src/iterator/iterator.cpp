@@ -90,6 +90,11 @@ BaseIterator &HeapIterator::operator++() {
   }
   return *this;
 }
+BaseIterator &HeapIterator::operator--() {
+  // 不支持向后迭代
+  return *this;
+}
+
 
 bool HeapIterator::operator==(const BaseIterator &other) const {
   if (other.type() != IteratorType::HeapIterator) {
@@ -157,4 +162,5 @@ IteratorType HeapIterator::type() const {
 }
 uint64_t HeapIterator::get_tranction_id() const {
   return max_tranction_id_;
+}
 } // namespace my_tiny_lsm
