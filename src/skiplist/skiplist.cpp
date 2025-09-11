@@ -44,8 +44,8 @@ bool SkiplistIterator::is_end() const { return current == nullptr; }
 
 std::string SkiplistIterator::get_key() const { return current->key_; }
 std::string SkiplistIterator::get_value() const { return current->value_; }
-uint64_t SkiplistIterator::get_tranction_id() const {
-  return current->tranction_id_;
+uint64_t SkiplistIterator::get_transaction_id() const {
+  return current->transaction_id_;
 }
 
 Skiplist::Skiplist(int max_level) : max_level(max_level), current_level(1) {
@@ -71,13 +71,13 @@ int Skiplist::random_level() {
 // in skiplist.cpp
 // ... (previous code) ...
 void Skiplist::put(const std::string &key, const std::string &value,
-                   uint64_t tranction_id) {
+                   uint64_t transaction_id) {
 
   std::vector<std::shared_ptr<SkiplistNode>> update(max_level, nullptr);
   auto current = head;
 
   // 使用一个临时的、仅用于比较的节点，确保多版本排序正确
-  auto temp_node_for_compare = std::make_shared<SkiplistNode>(key, value, tranction_id, 1);
+  auto temp_node_for_compare = std::make_shared<SkiplistNode>(key, value, transaction_id, 1);
 
   // 1. 从当前有效最高层开始，查找每一层的前驱节点
   for (int i = current_level - 1; i >= 0; i--) {
@@ -101,7 +101,7 @@ void Skiplist::put(const std::string &key, const std::string &value,
 
   // 4. 创建并链接新节点
   auto new_node =
-      std::make_shared<SkiplistNode>(key, value, tranction_id, new_node_level);
+      std::make_shared<SkiplistNode>(key, value, transaction_id, new_node_level);
 
   for (int i = 0; i < new_node_level; i++) {
     // 设置新节点的前向指针
@@ -121,72 +121,8 @@ void Skiplist::put(const std::string &key, const std::string &value,
   // 5. 更新跳表的总大小
   size_bytes += key.size() + value.size() + sizeof(uint64_t);
 }
-// ... (rest of the file) ...
-// void Skiplist::put(const std::string &key, const std::string &value,
-//                    uint64_t tranction_id) {
 
-//   std::vector<std::shared_ptr<SkiplistNode>> update(max_level, nullptr);
-
-//   int new_level = std::max(random_level(), current_level);
-//   auto new_node =
-//       std::make_shared<SkiplistNode>(key, value, tranction_id, new_level);
-
-//   auto current = head;
-//   for (int i = current_level - 1; i >= 0; i--) {
-//     while (current->forward_[i] && *current->forward_[i] < *new_node) {
-//       current = current->forward_[i];
-//     }
-//     // now current is the largest node less than new_node at level i
-//     update[i] = current;
-//   }
-//   current = current->forward_[0];
-//   //   if the key already exists, update the value and transaction_id
-//   if (current && current->key_ == key &&
-//       current->tranction_id_ == tranction_id) {
-//     size_bytes += value.size() - current->value_.size();
-//     current->value_ = value;
-//     current->tranction_id_ = tranction_id;
-//     spdlog::info("Updated key: {}, transaction_id: {} with new value", key,
-//                  tranction_id);
-//     return;
-//   }
-//   // need update
-//   if (new_level > current_level) {
-//     for (int i = current_level; i < new_level; i++) {
-//       update[i] = head;
-//     }
-//   }
-//   int random_bits = dis_level(gen);
-//   size_bytes += key.size() + value.size() + sizeof(uint64_t);
-//   // for (int i = 0; i < new_level; i++) {
-//   //   bool need_update = false;
-//   //   if (i == 0 || (new_level > current_level) || (random_bits & (1 << i))) {
-//   //     need_update = true;
-//   //   }
-//   //   if (need_update) {
-//   //     new_node->forward_[i] = update[i]->forward_[i];
-//   //     if (new_node->forward_[i]) {
-//   //       new_node->forward_[i]->set_backward(i, new_node);
-//   //     }
-//   //     update[i]->forward_[i] = new_node;
-//   //     new_node->set_backward(i, update[i]);
-//   //   } else {
-//   //     spdlog::info("Skip updating level {} for key {}", i, key);
-//   //     break;
-//   //   }
-//   // }
-//   for(int i=0;i<new_level;i++){
-//     new_node->forward_[i] = update[i]->forward_[i];
-//     if (new_node->forward_[i]) {
-//       new_node->forward_[i]->set_backward(i, new_node);
-//     }
-//     update[i]->forward_[i] = new_node;
-//     new_node->set_backward(i, update[i]);
-//   }
-//   current_level = new_level;
-// }
-
-SkiplistIterator Skiplist::get(const std::string &key, uint64_t tranction_id) {
+SkiplistIterator Skiplist::get(const std::string &key, uint64_t transaction_id) {
   auto current = head;
   for (int i = current_level - 1; i >= 0; i--) {
     while (current->forward_[i] && current->forward_[i]->key_ < key) {
@@ -194,17 +130,17 @@ SkiplistIterator Skiplist::get(const std::string &key, uint64_t tranction_id) {
     }
   }
   current = current->forward_[0];
-  if (tranction_id == 0) {
+  if (transaction_id == 0) {
     if (current && current->key_ == key) {
       // return SkiplistIterator{current};
       return SkiplistIterator(current);
     }
   } else {
     while (current && current->key_ == key) {
-      if (current->tranction_id_ <= tranction_id) {
+      if (current->transaction_id_ <= transaction_id) {
         return SkiplistIterator(current);
       }
-      // current transaction_id is greater than the given tranction_id, keep
+      // current transaction_id is greater than the given transaction_id, keep
       // looking
       current = current->forward_[0];
     }
@@ -271,7 +207,7 @@ std::vector<std::tuple<std::string, std::string, uint64_t>> Skiplist::flush() {
   auto node = head->forward_[0];
   while (node) {
     result.emplace_back(
-        std::make_tuple(node->key_, node->value_, node->tranction_id_));
+        std::make_tuple(node->key_, node->value_, node->transaction_id_));
     node = node->forward_[0];
   }
   return result;

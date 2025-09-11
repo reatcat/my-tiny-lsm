@@ -17,13 +17,13 @@ namespace my_tiny_lsm {
 struct SkiplistNode {
   std::string key_;
   std::string value_;
-  uint64_t tranction_id_;
+  uint64_t transaction_id_;
   std::vector<std::shared_ptr<SkiplistNode>> forward_;
   //   weak_ptr 防止循环引用导致内存泄漏
   std::vector<std::weak_ptr<SkiplistNode>> backward_;
   SkiplistNode(const std::string &key, const std::string &value,
                uint64_t transaction_id, int level)
-      : key_(key), value_(value), tranction_id_(transaction_id),
+      : key_(key), value_(value), transaction_id_(transaction_id),
         forward_(level, nullptr),
         backward_(level, std::weak_ptr<SkiplistNode>()) {}
 
@@ -34,20 +34,20 @@ struct SkiplistNode {
   }
   bool operator==(const SkiplistNode &other) const {
     return key_ == other.key_ && value_ == other.value_ &&
-           tranction_id_ == other.tranction_id_;
+           transaction_id_ == other.transaction_id_;
   }
 
   bool operator!=(const SkiplistNode &other) const { return !(*this == other); }
   // 事务越大的排在前面
   bool operator<(const SkiplistNode &other) const {
     if (key_ == other.key_) {
-      return tranction_id_ > other.tranction_id_;
+      return transaction_id_ > other.transaction_id_;
     }
     return key_ < other.key_;
   }
   bool operator>(const SkiplistNode &other) const {
     if (key_ == other.key_) {
-      return tranction_id_ < other.tranction_id_;
+      return transaction_id_ < other.transaction_id_;
     }
     return key_ > other.key_;
   }
@@ -74,7 +74,7 @@ public:
   virtual bool is_valid() const override;
   std::string get_key() const;
   std::string get_value() const;
-  uint64_t get_tranction_id() const override;
+  uint64_t get_transaction_id() const override;
 
 private:
   std::shared_ptr<SkiplistNode> current;
@@ -109,21 +109,21 @@ public:
   }
 
   // 插入或更新键值对
-  // 这里不对 tranction_id 进行检查，由上层保证 tranction_id 的合法性
+  // 这里不对 transaction_id 进行检查，由上层保证 transaction_id 的合法性
   void put(const std::string &key, const std::string &value,
-           uint64_t tranction_id);
+           uint64_t transaction_id);
 
   // 查找键对应的值
   // 事务 id 为0 表示没有开启事务
-  // 否则只能查找事务 id 小于等于 tranction_id 的值
-  // 返回值: 如果找到，返回 value 和 tranction_id，否则返回空
-  SkiplistIterator get(const std::string &key, uint64_t tranction_id);
+  // 否则只能查找事务 id 小于等于 transaction_id 的值
+  // 返回值: 如果找到，返回 value 和 transaction_id，否则返回空
+  SkiplistIterator get(const std::string &key, uint64_t transaction_id);
 
   // !!! 这里的 remove 是跳表本身真实的 remove,  lsm 应该使用 put 空值表示删除
   void remove(const std::string &key); // 删除键值对
 
   // 将跳表数据刷出，返回有序键值对列表
-  // value 为 真实 value 和 tranction_id 的二元组
+  // value 为 真实 value 和 transaction_id 的二元组
   std::vector<std::tuple<std::string, std::string, uint64_t>> flush();
 
   size_t get_size();

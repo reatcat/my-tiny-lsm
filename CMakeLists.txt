@@ -11,19 +11,30 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # ----------------------------------------------------------------------------
 # 自动下载并配置 Google Test
 # ----------------------------------------------------------------------------
+# include(FetchContent)
+# FetchContent_Declare(
+#   googletest
+#   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+# )
+
+# FetchContent_MakeAvailable(googletest)
+
+# FetchContent_Declare(
+#   spdlog
+#   URL https://github.com/gabime/spdlog/archive/refs/tags/v1.14.1.zip
+# )
+# FetchContent_MakeAvailable(spdlog)
 include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-)
-# 对于Windows: 防止覆盖父项目的编译器/链接器设置
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
 
 FetchContent_Declare(
-  spdlog
-  URL https://github.com/gabime/spdlog/archive/refs/tags/v1.14.1.zip
-)
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    )
+FetchContent_MakeAvailable(googletest)
+FetchContent_Declare(
+    spdlog
+    URL https://github.com/gabime/spdlog/archive/refs/tags/v1.14.1.zip
+    )
 FetchContent_MakeAvailable(spdlog)
 
 # ----------------------------------------------------------------------------

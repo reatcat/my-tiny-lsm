@@ -250,7 +250,7 @@ TEST(MySkiplistTest, TransactionId) {
   skiplist.put("key1", "value2_txn20", 20);
 
   // 验证事务 id
-  // 不指定事务 id (tranction_id=0)，应该返回最新的值 (txn_id最大的)
+  // 不指定事务 id (transaction_id=0)，应该返回最新的值 (txn_id最大的)
   EXPECT_EQ((skiplist.get("key1", 0).get_value()), "value2_txn20");
   
   // 指定一个看不到任何版本的事务id

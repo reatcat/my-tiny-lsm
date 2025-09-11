@@ -10,7 +10,7 @@ bool operator<(const SearchItem &a, const SearchItem &b) {
   if (a.key_ != b.key_) {
     return a.key_ < b.key_;
   }
-  if (a.tranction_id_ > b.tranction_id_) {
+  if (a.transaction_id_ > b.transaction_id_) {
     return true;
   }
   if (a.level_ < b.level_) {
@@ -23,7 +23,7 @@ bool operator>(const SearchItem &a, const SearchItem &b) {
   if (a.key_ != b.key_) {
     return a.key_ > b.key_;
   }
-  if (a.tranction_id_ < b.tranction_id_) {
+  if (a.transaction_id_ < b.transaction_id_) {
     return true;
   }
   if (a.level_ < b.level_) {
@@ -41,13 +41,13 @@ HeapIterator::HeapIterator(bool skip_deleted) : skip_deleted_(skip_deleted) {
   // 默认构造函数
 }
 HeapIterator::HeapIterator(std::vector<SearchItem> item_vec,
-                           uint64_t max_tranction_id, bool skip_deleted)
-    : skip_deleted_(skip_deleted), max_tranction_id_(max_tranction_id) {
+                           uint64_t max_transaction_id, bool skip_deleted)
+    : skip_deleted_(skip_deleted), max_transaction_id_(max_transaction_id) {
   for (auto &item : item_vec) {
     items.push(std::move(item));
   }
   while (!top_value_legal()) {
-    skip_by_tranction_id();
+    skip_by_transaction_id();
 
     while (!items.empty() && items.top().value_.empty()) {
       auto del_key = items.top().key_;
@@ -78,7 +78,7 @@ BaseIterator &HeapIterator::operator++() {
     items.pop();
   }
   while (!top_value_legal()) {
-    skip_by_tranction_id();
+    skip_by_transaction_id();
 
     while (!items.empty() && items.top().value_.empty()) {
       // 如果value为空，value_表明懒删除
@@ -119,10 +119,10 @@ bool HeapIterator::top_value_legal() const {
   if (items.empty()) {
     return true;
   }
-  if (max_tranction_id_ == 0) {
+  if (max_transaction_id_ == 0) {
     return items.top().value_.size() > 0;
   }
-  if (items.top().tranction_id_ <= max_tranction_id_) {
+  if (items.top().transaction_id_ <= max_transaction_id_) {
     if (skip_deleted_) {
       // 判断是否为空
       return items.top().value_.size() > 0;
@@ -132,14 +132,14 @@ bool HeapIterator::top_value_legal() const {
   }
   return false;
 }
-void HeapIterator::skip_by_tranction_id() {
+void HeapIterator::skip_by_transaction_id() {
   if (items.empty()) {
     return;
   }
-  if (max_tranction_id_ == 0) {
+  if (max_transaction_id_ == 0) {
     return;
   }
-  while (!items.empty() && items.top().tranction_id_ > max_tranction_id_) {
+  while (!items.empty() && items.top().transaction_id_ > max_transaction_id_) {
     items.pop();
   }
 }
@@ -160,7 +160,7 @@ void HeapIterator::update_current() const {
 IteratorType HeapIterator::type() const {
   return IteratorType::HeapIterator;
 }
-uint64_t HeapIterator::get_tranction_id() const {
-  return max_tranction_id_;
+uint64_t HeapIterator::get_transaction_id() const {
+  return max_transaction_id_;
 }
 } // namespace my_tiny_lsm

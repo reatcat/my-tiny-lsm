@@ -32,7 +32,7 @@ public:
   virtual bool operator!=(const BaseIterator &other) const = 0;
   virtual value_type operator*() const = 0;
   virtual IteratorType type() const = 0;
-  virtual uint64_t get_tranction_id() const = 0;
+  virtual uint64_t get_transaction_id() const = 0;
   virtual bool is_end() const = 0;
   virtual bool is_valid() const = 0;
   // virtual destructor for base class
@@ -43,14 +43,14 @@ class SSTableIterator;
 struct SearchItem {
   std::string key_;
   std::string value_;
-  uint64_t tranction_id_;
+  uint64_t transaction_id_;
   int idx_;
   int level_;
 
   SearchItem() = default;
-  SearchItem(std::string k, std::string v, int i, int l, uint64_t tranction_id)
+  SearchItem(std::string k, std::string v, int i, int l, uint64_t transaction_id)
       : key_(std::move(k)), value_(std::move(v)), idx_(i), level_(l),
-        tranction_id_(tranction_id) {}
+        transaction_id_(transaction_id) {}
 };
 
 bool operator>(const SearchItem &a, const SearchItem &b);
@@ -63,7 +63,7 @@ class HeapIterator : public BaseIterator {
 
 public:
   HeapIterator(bool skip_deleted = true);
-  HeapIterator(std::vector<SearchItem> item_vec, uint64_t max_tranction_id,
+  HeapIterator(std::vector<SearchItem> item_vec, uint64_t max_transaction_id,
                bool skip_deleted = true);
 
   pointer operator->() const;
@@ -76,7 +76,7 @@ public:
   virtual bool operator!=(const BaseIterator &other) const override;
 
   virtual IteratorType type() const override;
-  virtual uint64_t get_tranction_id() const override;
+  virtual uint64_t get_transaction_id() const override;
   virtual bool is_end() const override;
   virtual bool is_valid() const override;
   ~HeapIterator() override = default;
@@ -84,7 +84,7 @@ public:
 private:
   bool top_value_legal() const;
   // skip
-  void skip_by_tranction_id();
+  void skip_by_transaction_id();
 
   void update_current() const;
 
@@ -92,7 +92,7 @@ private:
                       std::greater<SearchItem>>
       items;
   mutable std::shared_ptr<value_type> current_;
-  uint64_t max_tranction_id_;
+  uint64_t max_transaction_id_;
   bool skip_deleted_;
 };
 
