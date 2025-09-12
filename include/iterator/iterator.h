@@ -27,7 +27,7 @@ public:
   // =0 makes the function pure virtual need to be implemented by derived
   // classes
   virtual BaseIterator &operator++() = 0;
-  virtual BaseIterator &operator--() = 0;
+  // virtual BaseIterator &operator--() = 0;
   virtual bool operator==(const BaseIterator &other) const = 0;
   virtual bool operator!=(const BaseIterator &other) const = 0;
   virtual value_type operator*() const = 0;
@@ -69,7 +69,7 @@ public:
   pointer operator->() const;
   virtual value_type operator*() const override;
   BaseIterator &operator++() override;
-  BaseIterator &operator--() override;
+  // BaseIterator &operator--() override;
   BaseIterator &operator--(int) = delete;
   BaseIterator &operator++(int) = delete;
   virtual bool operator==(const BaseIterator &other) const override;
