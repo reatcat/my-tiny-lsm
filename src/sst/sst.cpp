@@ -182,7 +182,7 @@ std::pair<uint64_t, uint64_t> SST::get_tranc_id_range() const {
 SSTBuilder::SSTBuilder(size_t block_size, bool has_bloom) : block(block_size) {
   if (has_bloom) {
     bloom_filter =
-        std::make_shared<BloomFilter>(10, 0.1); // 默认预期10个元素，误判率10%
+        std::make_shared<BloomFilter>(10000, 0.1); // 默认预期10个元素，误判率10%
   } else {
     bloom_filter = nullptr;
   }
