@@ -23,7 +23,7 @@ class SSTBuilder;
 class TransactionContext;
 
 class MemTable {
-  friend class transactionContext;
+  friend class TranContext; 
   friend class HeapIterator;
 
 private:
